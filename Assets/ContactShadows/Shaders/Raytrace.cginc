@@ -4,7 +4,6 @@
 #include "Common.cginc"
 
 // Shadow mask texture
-//sampler2D _ShadowMask;
 
 // Noise texture (used for dithering)
 sampler2D _NoiseTex;
@@ -23,15 +22,11 @@ uint _SampleCount;
 // Fragment shader - Screen space ray-trancing shadow pass
 half4 FragmentShadow(float2 uv : TEXCOORD) : SV_Target
 {
-    //float mask = tex2D(_ShadowMask, uv).r;
-    //if (mask < 0.01) return mask;
-
     // Temporal distributed noise offset
     float offs = tex2D(_NoiseTex, uv * _NoiseScale).a;
 
     // View space position of the origin
     float z0 = SampleRawDepth(uv);
-    //if (z0 > 0.999999) return mask; // BG early-out
     if (z0 > 0.999999) return 1.0; // BG early-out
     float3 vp0 = InverseProjectUVZ(uv, z0);
 
@@ -53,6 +48,5 @@ half4 FragmentShadow(float2 uv : TEXCOORD) : SV_Target
         if (diff > 0.01 * (1 - offs) && diff < _RejectionDepth) return 0;
     }
 
-    //return mask;
     return 1.0;
 }

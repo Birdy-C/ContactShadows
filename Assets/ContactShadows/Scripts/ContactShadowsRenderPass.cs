@@ -6,9 +6,6 @@ namespace PostEffects
 {
     class ContactShadowsRenderPass : ScriptableRenderPass
     {
-        // Material materialToBlit;
-        // RenderTargetIdentifier cameraColorTargetIdent;
-        // RenderTargetHandle tempTexture;
         Light _light;
         float _rejectionDepth = 0.5f;
         int _sampleCount = 16;
@@ -17,7 +14,8 @@ namespace PostEffects
 
         Shader _shader;
         NoiseTextureSet _noiseTextures;
-
+        Texture _ContactShadowTexture;
+        static Camera _currentCamera;
 
         #region Temporary objects
 
@@ -34,28 +32,23 @@ namespace PostEffects
         public ContactShadowsRenderPass(RenderPassEvent temp_renderPassEvent, NoiseTextureSet noiseTextures)
         {
             renderPassEvent = temp_renderPassEvent;
-            _light = GameObject.Find("Directional Light").GetComponent<Light>();
             _shader = Shader.Find("Hidden/PostEffects/ContactShadows");
             _noiseTextures = noiseTextures;
         }
 
         // This isn't part of the ScriptableRenderPass class and is our own addition.
         // For this custom pass we need the camera's color target, so that gets passed in.
-        public void Setup(float rejectionDepth, int sampleCount, float temporalFilter)
+        public void Setup(float rejectionDepth, int sampleCount, float temporalFilter, Texture ContactShadowTexture)
         {
             _rejectionDepth = rejectionDepth;
             _sampleCount = sampleCount;
             _temporalFilter = temporalFilter;
+            _ContactShadowTexture = ContactShadowTexture;
         }
 
         // called each frame before Execute, use it to set up things the pass will need
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            // create a temporary render texture that matches the camera
-            // cmd.GetTemporaryRT(tempTexture.id, cameraTextureDescriptor);
-            // ConfigureTarget(tempTexture.id);
-            // Camera.main.depthTextureMode = DepthTextureMode.Depth;
-
         }
 
         // Execute is called for every eligible camera every frame. It's not called at the moment that
@@ -65,10 +58,15 @@ namespace PostEffects
         // and what's being rendered.
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
-            UpdateTempObjects();
-
-            if (_light != null)
+            if (renderingData.cameraData.camera.cameraType == CameraType.Preview)
             {
+                return;
+            }
+            _currentCamera = renderingData.cameraData.camera;
+            _light = renderingData.lightData.visibleLights[renderingData.lightData.mainLightIndex].light;
+            if (_light != null && _currentCamera != null)
+            {
+                UpdateTempObjects();
                 BuildCommandBuffer();
                 context.ExecuteCommandBuffer(_command1);
                 context.ExecuteCommandBuffer(_command2);
@@ -78,7 +76,6 @@ namespace PostEffects
         // called after Execute, use it to clean up anything allocated in Configure
         public override void FrameCleanup(CommandBuffer cmd)
         {
-            // cmd.ReleaseTemporaryRT(tempTexture.id);
         }
 
         #region Internal methods
@@ -86,7 +83,7 @@ namespace PostEffects
         // Calculates the view-projection matrix for GPU use.
         static Matrix4x4 CalculateVPMatrix()
         {
-            var cam = Camera.main;
+            var cam = _currentCamera;
             var p = cam.nonJitteredProjectionMatrix;
             var v = cam.worldToCameraMatrix;
             return GL.GetGPUProjectionMatrix(p, true) * v;
@@ -95,7 +92,7 @@ namespace PostEffects
         // Get the screen dimensions.
         Vector2Int GetScreenSize()
         {
-            var cam = Camera.main;
+            var cam = _currentCamera;
             var div = _downsample ? 2 : 1;
             return new Vector2Int(cam.pixelWidth / div, cam.pixelHeight / div);
         }
@@ -141,7 +138,7 @@ namespace PostEffects
 
             // Calculate the light vector in the view space.
             _material.SetVector("_LightVector",
-              Camera.main.transform.InverseTransformDirection(-_light.transform.forward) *
+              _currentCamera.transform.InverseTransformDirection(-_light.transform.forward) *
                 _light.shadowBias / (_sampleCount - 1.5f)
             );
 
@@ -152,7 +149,7 @@ namespace PostEffects
             _material.SetTexture("_NoiseTex", noiseTexture);
 
             // "Reproject into the previous view" matrix
-            _material.SetMatrix("_Reprojection", _previousVP * Camera.main.transform.localToWorldMatrix);
+            _material.SetMatrix("_Reprojection", _previousVP * _currentCamera.transform.localToWorldMatrix);
             _previousVP = CalculateVPMatrix();
         }
 
@@ -168,7 +165,6 @@ namespace PostEffects
             if (_temporalFilter == 0)
             {
                 // Do raytracing and output to the temporary shadow mask RT.
-                _command1.SetGlobalTexture(Shader.PropertyToID("_ShadowMask"), BuiltinRenderTextureType.CurrentActive);
                 _command1.SetRenderTarget(tempMaskRT);
                 _command1.DrawProcedural(Matrix4x4.identity, _material, 0, MeshTopology.Triangles, 3);
             }
@@ -176,7 +172,6 @@ namespace PostEffects
             {
                 // Do raytracing and output to the unfiltered mask RT.
                 var unfilteredMaskID = Shader.PropertyToID("_UnfilteredMask");
-                _command1.SetGlobalTexture(Shader.PropertyToID("_ShadowMask"), BuiltinRenderTextureType.CurrentActive);
                 _command1.GetTemporaryRT(unfilteredMaskID, maskSize.x, maskSize.y, 0, FilterMode.Point, maskFormat);
                 _command1.SetRenderTarget(unfilteredMaskID);
                 _command1.DrawProcedural(Matrix4x4.identity, _material, 0, MeshTopology.Triangles, 3);
@@ -191,14 +186,16 @@ namespace PostEffects
             if (_downsample)
             {
                 // Downsample enabled: Use upsampler for the composition.
+                _command2.SetRenderTarget(_ContactShadowTexture);
                 _command2.SetGlobalTexture(Shader.PropertyToID("_TempMask"), tempMaskRT);
                 _command2.DrawProcedural(Matrix4x4.identity, _material, 3, MeshTopology.Triangles, 3);
             }
             else
             {
                 // No downsample: Use simple blit.
-                _command2.Blit(tempMaskRT, BuiltinRenderTextureType.CurrentActive);
+                _command2.Blit(tempMaskRT, _ContactShadowTexture);
             }
+            _command2.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _ContactShadowTexture);
 
             // Update the filter history.
             _prevMaskRT2 = _prevMaskRT1;
