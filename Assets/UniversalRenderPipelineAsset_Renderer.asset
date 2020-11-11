@@ -15,11 +15,13 @@ MonoBehaviour:
   m_Active: 1
   settings:
     WhenToInsert: 550
-    _rejectionDepth: 2.09
+    _rejectionDepth: 1.1
     _sampleCount: 16
     _temporalFilter: 0.5
     _downsample: 0
     _noiseTextures: {fileID: 11400000, guid: 798030585d01fc549b6bcb2975851535, type: 2}
+    _ContactShadowTexture: {fileID: 8400000, guid: c52285784e80b264a9d6320ee469f748,
+      type: 2}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

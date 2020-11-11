@@ -9,7 +9,7 @@ public sealed class GrassRenderer : MonoBehaviour
     [SerializeField] Color _color = Color.white;
     [SerializeField] float _scale = 1;
 
-    [SerializeField, HideInInspector] Shader _shader;
+    [SerializeField] Shader _shader;
 
     ComputeBuffer _drawArgsBuffer;
 
