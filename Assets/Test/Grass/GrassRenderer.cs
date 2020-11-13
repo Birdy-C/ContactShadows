@@ -9,11 +9,11 @@ public sealed class GrassRenderer : MonoBehaviour
     [SerializeField] Color _color = Color.white;
     [SerializeField] float _scale = 1;
 
-    [SerializeField] Shader _shader;
+    [SerializeField] Material _material;
 
     ComputeBuffer _drawArgsBuffer;
 
-    Material _material;
+    //Material _material;
     MaterialPropertyBlock _sheet;
 
     void OnValidate()
@@ -34,13 +34,13 @@ public sealed class GrassRenderer : MonoBehaviour
 
     void OnDestroy()
     {
-        if (_material)
-        {
-            if (Application.isPlaying)
-                Destroy(_material);
-            else
-                DestroyImmediate(_material);
-        }
+        //if (_material)
+        //{
+        //    if (Application.isPlaying)
+        //        Destroy(_material);
+        //    else
+        //        DestroyImmediate(_material);
+        //}
     }
 
     void Update()
@@ -52,7 +52,7 @@ public sealed class GrassRenderer : MonoBehaviour
             _drawArgsBuffer = new ComputeBuffer(
                 1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
 
-        if (_material == null) _material = new Material(_shader);
+        if (_material == null) return;
         if (_sheet == null) _sheet = new MaterialPropertyBlock();
 
         // Bounding box (not accurate but enough for culling roughly)
