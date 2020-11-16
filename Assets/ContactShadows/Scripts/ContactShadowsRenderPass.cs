@@ -6,6 +6,7 @@ namespace PostEffects
 {
     class ContactShadowsRenderPass : ScriptableRenderPass
     {
+        bool _enable = true;
         Light _light;
         float _rejectionDepth = 0.5f;
         int _sampleCount = 16;
@@ -38,8 +39,9 @@ namespace PostEffects
 
         // This isn't part of the ScriptableRenderPass class and is our own addition.
         // For this custom pass we need the camera's color target, so that gets passed in.
-        public void Setup(float rejectionDepth, int sampleCount, float temporalFilter, Texture ContactShadowTexture)
+        public void Setup(bool enable, float rejectionDepth, int sampleCount, float temporalFilter, Texture ContactShadowTexture)
         {
+            _enable = enable;
             _rejectionDepth = rejectionDepth;
             _sampleCount = sampleCount;
             _temporalFilter = temporalFilter;
@@ -130,7 +132,11 @@ namespace PostEffects
             }
 
             // Update the common shader parameters.
-            _material.SetFloat("_RejectionDepth", _rejectionDepth);
+            if(_enable)
+                _material.SetFloat("_RejectionDepth", _rejectionDepth);
+            else
+                _material.SetFloat("_RejectionDepth", 0);
+
             _material.SetInt("_SampleCount", _sampleCount);
 
             var convergence = Mathf.Pow(1 - _temporalFilter, 2);

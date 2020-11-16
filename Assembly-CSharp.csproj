@@ -68,13 +68,16 @@
     <Compile Include="Assets\ContactShadows\Scripts\ContactShadowsRenderPass.cs" />
     <Compile Include="Assets\ContactShadows\Scripts\NoiseTextureSet.cs" />
     <Compile Include="Assets\Test\Grass\GrassRenderer.cs" />
-    <None Include="Assets\Test\Grass\Grass.shader" />
     <None Include="Assets\ContactShadows\Shaders\Raytrace.cginc" />
     <None Include="Assets\ContactShadows\Shaders\Common.cginc" />
     <None Include="Assets\Test\UnityHDRI\MuirWood\Info.txt" />
     <None Include="Assets\ContactShadows\Shaders\ContactShadows.shader" />
     <None Include="Assets\ContactShadows\Shaders\TempFilter.cginc" />
+    <None Include="Assets\ContactShadows\Shaders\LitInputContactShadows.hlsl" />
+    <None Include="Assets\Test\Grass\Grass.shader" />
+    <None Include="Assets\ContactShadows\Shaders\LitForwardPassContactShadows.hlsl" />
     <None Include="Assets\ContactShadows\Shaders\Composite.cginc" />
+    <None Include="Assets\ContactShadows\Shaders\LitWithContactShadows.shader" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.11f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
