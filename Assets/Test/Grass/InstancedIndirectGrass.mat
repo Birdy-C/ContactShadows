@@ -90,11 +90,11 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.41936636, g: 0.7169812, b: 0.29423285, a: 1}
+    - _BaseColor: {r: 0.7611714, g: 0.972549, b: 0.34901956, a: 1}
     - _BoundSize: {r: 250, g: 250, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GroundColor: {r: 0.2195755, g: 0.46226418, b: 0.2581851, a: 1}
+    - _GroundColor: {r: 0.18857816, g: 0.2735849, b: 0.13679245, a: 1}
     - _PivotPosWS: {r: 6.2, g: 0, b: 27.1, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _WindADirection: {r: 0.1, g: 0.1, b: 0, a: 1}

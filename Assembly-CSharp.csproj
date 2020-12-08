@@ -66,6 +66,7 @@
     <Compile Include="Assets\ContactShadows\ContactShadows.cs" />
     <Compile Include="Assets\ContactShadows\Scripts\ContactShadowsFeature.cs" />
     <Compile Include="Assets\ContactShadows\Scripts\ContactShadowsRenderPass.cs" />
+    <Compile Include="Assets\ContactShadows\Scripts\InsertContactShadowsRenderPass.cs" />
     <Compile Include="Assets\ContactShadows\Scripts\NoiseTextureSet.cs" />
     <Compile Include="Assets\Test\Grass\GrassRenderer.cs" />
     <None Include="Assets\ContactShadows\Shaders\Raytrace.cginc" />
