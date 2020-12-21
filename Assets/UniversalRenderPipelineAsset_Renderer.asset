@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   settings:
-    _rejectionDepth: 0.02
+    _rejectionDepth: 0.0176
     _sampleCount: 21
     _temporalFilter: 0.782
     _noiseTextures: {fileID: 11400000, guid: 798030585d01fc549b6bcb2975851535, type: 2}

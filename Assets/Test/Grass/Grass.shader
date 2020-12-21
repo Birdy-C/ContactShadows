@@ -13,7 +13,7 @@
             Pass
             {
                 ZWrite On
-                Cull Back //use default culling because this shader is billboard 
+                Cull Off
                 ZTest Less
 
 
@@ -191,7 +191,7 @@
             Pass
             {
                 ZWrite On
-                Cull Back //use default culling because this shader is billboard 
+                Cull Off
                 ZTest Less
 
 
@@ -369,7 +369,7 @@
             Pass
             {
                 ZWrite On
-                Cull Back //use default culling because this shader is billboard 
+                Cull Off
                 ZTest Less
 
 

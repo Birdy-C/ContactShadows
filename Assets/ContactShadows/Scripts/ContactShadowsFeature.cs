@@ -7,7 +7,7 @@ public class ContactShadowsFeature : ScriptableRendererFeature
     [System.Serializable]
     public class ContactShadowsFeatureSettings
     {
-        [Range(0, 5)] public float _rejectionDepth = 0.5f;
+        [Range(0, 0.05f)] public float _rejectionDepth = 0.5f;
         [Range(4, 32)] public int _sampleCount = 16;
         [Range(0, 1)] public float _temporalFilter = 0.5f;
         public NoiseTextureSet _noiseTextures;
