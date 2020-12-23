@@ -27,15 +27,15 @@ half4 FragmentComposite(float2 uv : TEXCOORD) : SV_Target
     float2 uv7 = uv + duv.wy;
     float2 uv8 = uv + duv.xy;
 
-    float z0 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv0, 0, 0));
-    float z1 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv1, 0, 0));
-    float z2 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv2, 0, 0));
-    float z3 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv3, 0, 0));
-    float z4 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv4, 0, 0));
-    float z5 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv5, 0, 0));
-    float z6 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv6, 0, 0));
-    float z7 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv7, 0, 0));
-    float z8 = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv8, 0, 0));
+    float z0 = SampleRawDepth(uv0);
+    float z1 = SampleRawDepth(uv1);
+    float z2 = SampleRawDepth(uv2);
+    float z3 = SampleRawDepth(uv3);
+    float z4 = SampleRawDepth(uv4);
+    float z5 = SampleRawDepth(uv5);
+    float z6 = SampleRawDepth(uv6);
+    float z7 = SampleRawDepth(uv7);
+    float z8 = SampleRawDepth(uv8);
 
     float w0 = GWeight(z4, z0);
     float w1 = GWeight(z4, z1);

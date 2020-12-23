@@ -4,7 +4,8 @@
 #include "UnityCG.cginc"
 
 // Camera depth texture
-sampler2D _CameraDepthTexture;
+//sampler2D _CameraDepthTexture;
+UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
 float4 _CameraDepthTexture_TexelSize;
 
 // Get a raw depth from the depth buffer.

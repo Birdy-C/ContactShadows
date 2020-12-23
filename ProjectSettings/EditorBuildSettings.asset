@@ -4,7 +4,10 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Grass.unity
+    guid: e9a416b2544acb143bb18f4ceed3db41
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: f6473e9bd6e8a994f8472bd7c0b78664,
       type: 2}

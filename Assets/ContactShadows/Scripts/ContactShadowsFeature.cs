@@ -12,6 +12,7 @@ public class ContactShadowsFeature : ScriptableRendererFeature
         [Range(0, 1)] public float _temporalFilter = 0.5f;
         public NoiseTextureSet _noiseTextures;
         [HideInInspector] public Texture _DefaultTexture;
+        public bool _downsample = false;
     }
 
 
@@ -27,7 +28,7 @@ public class ContactShadowsFeature : ScriptableRendererFeature
           );
 
         insertContactShadowRenderPass = new InsertContactShadowsRenderPass(
-            RenderPassEvent.BeforeRendering
+            RenderPassEvent.BeforeRenderingPrepasses
             );
     }
 

@@ -16,7 +16,7 @@ namespace PostEffects
         NoiseTextureSet _noiseTextures;
         Texture _DefaultTexture;
         Camera _currentCamera;
-
+        int _currentTextureWidth, _currentTextureHeight;
         #region Temporary objects
 
         Material _material;
@@ -65,6 +65,8 @@ namespace PostEffects
         // called each frame before Execute, use it to set up things the pass will need
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
+            _currentTextureWidth = cameraTextureDescriptor.width;
+            _currentTextureHeight = cameraTextureDescriptor.height;
         }
 
         // Execute is called for every eligible camera every frame. It's not called at the moment that
@@ -115,7 +117,8 @@ namespace PostEffects
         {
             var cam = _currentCamera;
             var div = 1;
-            return new Vector2Int(cam.pixelWidth / div, cam.pixelHeight / div);
+            //return new Vector2Int(cam.pixelWidth / div, cam.pixelHeight / div);
+            return new Vector2Int(_currentTextureWidth/ div, _currentTextureHeight / div);
         }
 
         // Update the temporary objects for the current frame.
@@ -175,11 +178,11 @@ namespace PostEffects
         // Build the command buffer for the current frame.
         void BuildCommandBuffer()
         {
+            //Debug.Log(CameraDictionary.Count);
             // Allocate the temporary shadow mask RT.
             var maskSize = GetScreenSize();
             var maskFormat = RenderTextureFormat.R8;
             var tempMaskRT = RenderTexture.GetTemporary(maskSize.x, maskSize.y, 0, maskFormat);
-            //_command.SetGlobalTexture("_CameraDepthTexture", _cameraDepth);
 
             // Command buffer 1: raytracing and temporal filter
             if (_temporalFilter == 0)
