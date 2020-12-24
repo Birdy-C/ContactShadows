@@ -11,6 +11,7 @@ namespace PostEffects
         float _rejectionDepth = 0.5f;
         int _sampleCount = 16;
         float _temporalFilter = 0.5f;
+        bool _downsample = false;
 
         Shader _shader;
         NoiseTextureSet _noiseTextures;
@@ -28,6 +29,9 @@ namespace PostEffects
 
         CommandBuffer _command;
         RenderTargetIdentifier _cameraDepth;
+        RenderTexture tempRTHalf, tempRTFull;
+        RenderTexture unfilteredMask;
+
         // We track the VP matrix without using previousViewProjectionMatrix
         // because it's not available for use in OnPreCull.
         static Dictionary<Camera, CameraVariable> CameraDictionary = new Dictionary<Camera, CameraVariable>();
@@ -60,6 +64,7 @@ namespace PostEffects
             _sampleCount = setting._sampleCount;
             _temporalFilter = setting._temporalFilter;
             _DefaultTexture = setting._DefaultTexture;
+            _downsample = setting._downsample;
         }
 
         // called each frame before Execute, use it to set up things the pass will need
@@ -67,6 +72,17 @@ namespace PostEffects
         {
             _currentTextureWidth = cameraTextureDescriptor.width;
             _currentTextureHeight = cameraTextureDescriptor.height;
+            var maskFormat = RenderTextureFormat.R8;
+            tempRTFull = RenderTexture.GetTemporary(cameraTextureDescriptor.width, cameraTextureDescriptor.height, 0, maskFormat);
+            if (_downsample)
+            {
+                tempRTHalf = RenderTexture.GetTemporary(cameraTextureDescriptor.width / 2, cameraTextureDescriptor.height / 2, 0, maskFormat);
+            }
+            else
+            {
+                tempRTHalf = RenderTexture.GetTemporary(cameraTextureDescriptor.width, cameraTextureDescriptor.height, 0, maskFormat);
+            }
+            unfilteredMask = RenderTexture.GetTemporary(cameraTextureDescriptor.width, cameraTextureDescriptor.height, 0, maskFormat);
         }
 
         // Execute is called for every eligible camera every frame. It's not called at the moment that
@@ -99,6 +115,8 @@ namespace PostEffects
         // called after Execute, use it to clean up anything allocated in Configure
         public override void FrameCleanup(CommandBuffer cmd)
         {
+            RenderTexture.ReleaseTemporary(tempRTHalf);
+            RenderTexture.ReleaseTemporary(unfilteredMask);
         }
 
         #region Internal methods
@@ -178,38 +196,51 @@ namespace PostEffects
         // Build the command buffer for the current frame.
         void BuildCommandBuffer()
         {
-            //Debug.Log(CameraDictionary.Count);
             // Allocate the temporary shadow mask RT.
             var maskSize = GetScreenSize();
-            var maskFormat = RenderTextureFormat.R8;
-            var tempMaskRT = RenderTexture.GetTemporary(maskSize.x, maskSize.y, 0, maskFormat);
+            //var maskFormat = RenderTextureFormat.R8;
 
             // Command buffer 1: raytracing and temporal filter
             if (_temporalFilter == 0)
             {
                 // Do raytracing and output to the temporary shadow mask RT.
-                _command.SetRenderTarget(tempMaskRT);
+                _command.SetRenderTarget(tempRTHalf);
                 _command.DrawProcedural(Matrix4x4.identity, _material, 0, MeshTopology.Triangles, 3);
             }
             else
             {
                 // Do raytracing and output to the unfiltered mask RT.
-                var unfilteredMaskID = Shader.PropertyToID("_UnfilteredMask");
-                _command.GetTemporaryRT(unfilteredMaskID, maskSize.x, maskSize.y, 0, FilterMode.Point, maskFormat);
-                _command.SetRenderTarget(unfilteredMaskID);
+                //var unfilteredMaskID = Shader.PropertyToID("");
+                //_command.GetTemporaryRT(unfilteredMaskID, maskSize.x, maskSize.y, 0, FilterMode.Point, maskFormat);
+                _command.SetRenderTarget(unfilteredMask);
                 _command.DrawProcedural(Matrix4x4.identity, _material, 0, MeshTopology.Triangles, 3);
+                _command.SetGlobalTexture(Shader.PropertyToID("_UnfilteredMask"), unfilteredMask);
 
                 // Apply the temporal filter and output to the temporary shadow mask RT.
                 _command.SetGlobalTexture(Shader.PropertyToID("_PrevMask"), CameraDictionary[_currentCamera]._prevMaskRT1);
-                _command.SetRenderTarget(tempMaskRT);
+                _command.SetRenderTarget(tempRTHalf);
                 _command.DrawProcedural(Matrix4x4.identity, _material, 1 + (Time.frameCount & 1), MeshTopology.Triangles, 3);
             }
 
+            if (_downsample)
+            {
+                // Downsample enabled: Use upsampler for the composition.
+                // TODO why??
+                _command.Blit(_DefaultTexture, tempRTFull);
+                _command.SetRenderTarget(tempRTFull);
+                _command.SetGlobalTexture(Shader.PropertyToID("_TempMask"), tempRTHalf);
+                _command.DrawProcedural(Matrix4x4.identity, _material, 3, MeshTopology.Triangles, 3);
+            }
+            else
+            {
+                // No downsample: Use simple blit.
+                _command.Blit(tempRTHalf, tempRTFull);
+            }
             _command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _DefaultTexture);
 
             // Update the filter history.
             CameraDictionary[_currentCamera]._prevMaskRT2 = CameraDictionary[_currentCamera]._prevMaskRT1;
-            CameraDictionary[_currentCamera]._prevMaskRT1 = tempMaskRT;
+            CameraDictionary[_currentCamera]._prevMaskRT1 = tempRTFull;
         }
         #endregion
     }
