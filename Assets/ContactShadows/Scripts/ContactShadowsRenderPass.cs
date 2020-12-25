@@ -103,7 +103,22 @@ namespace PostEffects
                 CameraDictionary.Add(_currentCamera, new CameraVariable());
             }
 
-            _light = renderingData.lightData.visibleLights[renderingData.lightData.mainLightIndex].light;
+            if(renderingData.lightData.mainLightIndex == -1)
+            {
+                if(renderingData.lightData.visibleLights.Length > 0)
+                {
+                    _light = renderingData.lightData.visibleLights[0].light;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                _light = renderingData.lightData.visibleLights[renderingData.lightData.mainLightIndex].light;
+            }
+
             if (_light != null && _currentCamera != null)
             {
                 UpdateTempObjects();

@@ -20,6 +20,7 @@
                 Tags { "LightMode" = "UniversalForward" "RenderType" = "Opaque" }
 
                 HLSLPROGRAM
+                #pragma target 3.5 
                 #pragma vertex vert
                 #pragma fragment frag
                 float4 _Color;
@@ -130,6 +131,7 @@
                 {
                     float4 positionOS   : POSITION;
                     float3 normalOS     : NORMAL;
+                    UNITY_VERTEX_INPUT_INSTANCE_ID
                 };
 
                 struct Varyings
@@ -137,6 +139,7 @@
                     float4 positionCS  : SV_POSITION;
                     float3 positionWS  : TEXCOORD0;
                     half3 color        : COLOR;
+                    UNITY_VERTEX_OUTPUT_STEREO
                 };
 
                 CBUFFER_START(UnityPerMaterial)
@@ -155,6 +158,8 @@
                 Varyings vert(Attributes IN, uint instanceID : SV_InstanceID)
                 {
                     Varyings OUT;
+                    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
                     float4x4 w2o, o2w;
                     float3 perGrassPivotPosWS = setup(instanceID, w2o, o2w);//we pre-transform to posWS in C# now
 
@@ -176,6 +181,8 @@
 
                 half4 frag(Varyings IN) : SV_Target
                 {
+                    UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
+
                     float4 screenPosition = ComputeScreenPos(TransformWorldToHClip(IN.positionWS));
                     float2 uv = screenPosition.xy / screenPosition.w;
                     float shadow = SampleContactShadowsMask(uv);
@@ -198,6 +205,7 @@
                 Tags { "LightMode" = "ShadowCaster" "RenderType" = "Opaque" }
 
                 HLSLPROGRAM
+                #pragma target 3.5 
                 #pragma vertex vert
                 #pragma fragment frag
                 float4 _Color;
@@ -376,6 +384,7 @@
                 Tags { "LightMode" = "DepthOnly" "RenderType" = "Opaque" }
 
                 HLSLPROGRAM
+                #pragma target 3.5 
                 #pragma vertex vert
                 #pragma fragment frag
                 float4 _Color;

@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Skull.unity
+    guid: ae2a7aae7eaceab4fa355754b825d7ac
+  - enabled: 1
     path: Assets/Grass.unity
     guid: e9a416b2544acb143bb18f4ceed3db41
   m_configObjects:
