@@ -7,7 +7,7 @@ public class ContactShadowsFeature : ScriptableRendererFeature
     [System.Serializable]
     public class ContactShadowsFeatureSettings
     {
-        [Range(0, 0.05f)] public float _rejectionDepth = 0.5f;
+        [Range(0, 10.05f)] public float _rejectionDepth = 0.5f;
         [Range(4, 32)] public int _sampleCount = 16;
         [Range(0, 1)] public float _temporalFilter = 0.5f;
         public NoiseTextureSet _noiseTextures;
@@ -23,12 +23,12 @@ public class ContactShadowsFeature : ScriptableRendererFeature
     public override void Create()
     {
         contactShadowRenderPass = new ContactShadowsRenderPass(
-          RenderPassEvent.AfterRendering,
+          RenderPassEvent.AfterRenderingTransparents,
           settings._noiseTextures
           );
 
         insertContactShadowRenderPass = new InsertContactShadowsRenderPass(
-            RenderPassEvent.BeforeRenderingPrepasses
+            RenderPassEvent.AfterRenderingPostProcessing
             );
     }
 
@@ -37,11 +37,11 @@ public class ContactShadowsFeature : ScriptableRendererFeature
     {
         // Gather up and pass any extra information our pass will need.
         // In this case we're getting the camera's color buffer target
-        contactShadowRenderPass.Setup(settings);
-        insertContactShadowRenderPass.Setup(contactShadowRenderPass.GetRenderTexture(renderingData.cameraData.camera));
+        contactShadowRenderPass.Setup(settings, renderer.cameraColorTarget, renderer.cameraDepth);
+        insertContactShadowRenderPass.Setup(contactShadowRenderPass.GetBlank());
         // Ask the renderer to add our pass.
         // Could queue up multiple passes and/or pick passes to use
         renderer.EnqueuePass(contactShadowRenderPass);
-        renderer.EnqueuePass(insertContactShadowRenderPass);
+        //renderer.EnqueuePass(insertContactShadowRenderPass);
     }
 }

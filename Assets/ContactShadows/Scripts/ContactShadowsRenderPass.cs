@@ -18,6 +18,9 @@ namespace PostEffects
         Texture _DefaultTexture;
         Camera _currentCamera;
         int _currentTextureWidth, _currentTextureHeight;
+        RenderTargetIdentifier cameraColorTargetIdent;
+        RenderTargetIdentifier depthTargetIdent;
+
         #region Temporary objects
 
         Material _material;
@@ -55,16 +58,22 @@ namespace PostEffects
                 return _DefaultTexture;
             }
         }
-        
+        public RenderTargetIdentifier GetBlank()
+        {
+            return _DefaultTexture;
+        }
+
         // This isn't part of the ScriptableRenderPass class and is our own addition.
         // For this custom pass we need the camera's color target, so that gets passed in.
-        public void Setup(ContactShadowsFeature.ContactShadowsFeatureSettings setting)
+        public void Setup(ContactShadowsFeature.ContactShadowsFeatureSettings setting, RenderTargetIdentifier cameraColorTargetIdent, RenderTargetIdentifier depthTargetIdent)
         {
             _rejectionDepth = setting._rejectionDepth;
             _sampleCount = setting._sampleCount;
             _temporalFilter = setting._temporalFilter;
             _DefaultTexture = setting._DefaultTexture;
             _downsample = setting._downsample;
+            this.cameraColorTargetIdent = cameraColorTargetIdent;
+            this.depthTargetIdent = depthTargetIdent;
         }
 
         // called each frame before Execute, use it to set up things the pass will need
@@ -124,6 +133,7 @@ namespace PostEffects
                 UpdateTempObjects();
                 BuildCommandBuffer();
                 context.ExecuteCommandBuffer(_command);
+                _command.Clear();
             }
         }
 
@@ -214,7 +224,7 @@ namespace PostEffects
             // Allocate the temporary shadow mask RT.
             var maskSize = GetScreenSize();
             //var maskFormat = RenderTextureFormat.R8;
-
+            
             // Command buffer 1: raytracing and temporal filter
             if (_temporalFilter == 0)
             {
@@ -251,8 +261,10 @@ namespace PostEffects
                 // No downsample: Use simple blit.
                 _command.Blit(tempRTHalf, tempRTFull);
             }
-            _command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _DefaultTexture);
-
+            //_command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _DefaultTexture);
+            _command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), tempRTFull);
+            _command.SetRenderTarget(cameraColorTargetIdent, depthTargetIdent);
+            
             // Update the filter history.
             CameraDictionary[_currentCamera]._prevMaskRT2 = CameraDictionary[_currentCamera]._prevMaskRT1;
             CameraDictionary[_currentCamera]._prevMaskRT1 = tempRTFull;

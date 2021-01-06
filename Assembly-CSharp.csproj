@@ -69,7 +69,6 @@
     <Compile Include="Assets\ContactShadows\Scripts\InsertContactShadowsRenderPass.cs" />
     <Compile Include="Assets\ContactShadows\Scripts\NoiseTextureSet.cs" />
     <Compile Include="Assets\Test\Grass\GrassRenderer.cs" />
-    <Compile Include="Assets\showFPS.cs" />
     <None Include="Assets\ContactShadows\Shaders\Raytrace.cginc" />
     <None Include="Assets\ContactShadows\Shaders\Common.cginc" />
     <None Include="Assets\Test\UnityHDRI\MuirWood\Info.txt" />
