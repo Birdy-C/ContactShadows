@@ -5,13 +5,13 @@
 
 // Camera depth texture
 //sampler2D _CameraDepthTexture;
-UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
+UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTextureTemp);
 float4 _CameraDepthTexture_TexelSize;
 
 // Get a raw depth from the depth buffer.
 float SampleRawDepth(float2 uv)
 {
-    float z = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTexture, float4(uv, 0, 0));
+    float z = SAMPLE_DEPTH_TEXTURE_LOD(_CameraDepthTextureTemp, float4(uv, 0, 0));
 #if defined(UNITY_REVERSED_Z)
     z = 1 - z;
 #endif

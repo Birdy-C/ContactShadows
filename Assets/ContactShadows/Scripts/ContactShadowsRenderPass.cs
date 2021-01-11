@@ -19,7 +19,7 @@ namespace PostEffects
         Camera _currentCamera;
         int _currentTextureWidth, _currentTextureHeight;
         RenderTargetIdentifier cameraColorTargetIdent;
-        RenderTargetIdentifier depthTargetIdent;
+        RenderTargetIdentifier cameraDepthTargetIdent;
 
         #region Temporary objects
 
@@ -30,8 +30,7 @@ namespace PostEffects
             public Matrix4x4 _previousVP = Matrix4x4.identity;
         }
 
-        CommandBuffer _command;
-        RenderTargetIdentifier _cameraDepth;
+        //CommandBuffer _command;
         RenderTexture tempRTHalf, tempRTFull;
         RenderTexture unfilteredMask;
 
@@ -65,7 +64,7 @@ namespace PostEffects
 
         // This isn't part of the ScriptableRenderPass class and is our own addition.
         // For this custom pass we need the camera's color target, so that gets passed in.
-        public void Setup(ContactShadowsFeature.ContactShadowsFeatureSettings setting, RenderTargetIdentifier cameraColorTargetIdent, RenderTargetIdentifier depthTargetIdent)
+        public void Setup(ContactShadowsFeature.ContactShadowsFeatureSettings setting, RenderTargetIdentifier cameraColorTargetIdent, RenderTargetIdentifier cameraDepthTargetIdent)
         {
             _rejectionDepth = setting._rejectionDepth;
             _sampleCount = setting._sampleCount;
@@ -73,7 +72,7 @@ namespace PostEffects
             _DefaultTexture = setting._DefaultTexture;
             _downsample = setting._downsample;
             this.cameraColorTargetIdent = cameraColorTargetIdent;
-            this.depthTargetIdent = depthTargetIdent;
+            this.cameraDepthTargetIdent = cameraDepthTargetIdent;
         }
 
         // called each frame before Execute, use it to set up things the pass will need
@@ -131,9 +130,9 @@ namespace PostEffects
             if (_light != null && _currentCamera != null)
             {
                 UpdateTempObjects();
-                BuildCommandBuffer();
-                context.ExecuteCommandBuffer(_command);
-                _command.Clear();
+                BuildCommandBuffer(ref context);
+                //context.ExecuteCommandBuffer(_command);
+                //_command.Clear();
             }
         }
 
@@ -183,15 +182,15 @@ namespace PostEffects
                 _material.hideFlags = HideFlags.DontSave;
             }
 
-            if (_command == null)
-            {
-                _command = new CommandBuffer();
-                _command.name = "Contact Shadow Ray Tracing";
-            }
-            else
-            {
-                _command.Clear();
-            }
+            //if (_command == null)
+            //{
+            //    _command = new CommandBuffer();
+            //    _command.name = "Contact Shadow Ray Tracing";
+            //}
+            //else
+            //{
+            //    _command.Clear();
+            //}
 
             // Update the common shader parameters.
             _material.SetFloat("_RejectionDepth", _rejectionDepth);
@@ -219,8 +218,11 @@ namespace PostEffects
         }
 
         // Build the command buffer for the current frame.
-        void BuildCommandBuffer()
+        void BuildCommandBuffer(ref ScriptableRenderContext context)
         {
+            CommandBuffer _command = CommandBufferPool.Get("Contact Shadow Ray Tracing");
+
+
             // Allocate the temporary shadow mask RT.
             var maskSize = GetScreenSize();
             //var maskFormat = RenderTextureFormat.R8;
@@ -263,11 +265,14 @@ namespace PostEffects
             }
             //_command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _DefaultTexture);
             _command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), tempRTFull);
-            _command.SetRenderTarget(cameraColorTargetIdent, depthTargetIdent);
-            
+            _command.SetRenderTarget(cameraColorTargetIdent, cameraDepthTargetIdent);
+
             // Update the filter history.
             CameraDictionary[_currentCamera]._prevMaskRT2 = CameraDictionary[_currentCamera]._prevMaskRT1;
             CameraDictionary[_currentCamera]._prevMaskRT1 = tempRTFull;
+
+            context.ExecuteCommandBuffer(_command);
+            CommandBufferPool.Release(_command);
         }
         #endregion
     }
