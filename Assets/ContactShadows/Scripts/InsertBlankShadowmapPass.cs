@@ -5,11 +5,10 @@ using System.Collections.Generic;
 
 namespace PostEffects
 {
-    class InsertContactShadowsRenderPass : ScriptableRenderPass
+    class InsertBlankShadowmapPass : ScriptableRenderPass
     {
-        CommandBuffer _command;
         RenderTargetIdentifier _rendertarget;
-        public InsertContactShadowsRenderPass(RenderPassEvent temp_renderPassEvent)
+        public InsertBlankShadowmapPass(RenderPassEvent temp_renderPassEvent)
         {
             renderPassEvent = temp_renderPassEvent;
         }
@@ -24,15 +23,6 @@ namespace PostEffects
         // called each frame before Execute, use it to set up things the pass will need
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            if (_command == null)
-            {
-                _command = new CommandBuffer();
-                _command.name = "Insert Contact Shadow";
-            }
-            else
-            {
-                _command.Clear();
-            }
         }
 
         // Execute is called for every eligible camera every frame. It's not called at the moment that
@@ -42,8 +32,11 @@ namespace PostEffects
         // and what's being rendered.
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            CommandBuffer _command = CommandBufferPool.Get("Insert Blank Contact Shadow");
             _command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _rendertarget);
             context.ExecuteCommandBuffer(_command);
+            _command.Clear();
+            CommandBufferPool.Release(_command);
         }
 
         // called after Execute, use it to clean up anything allocated in Configure

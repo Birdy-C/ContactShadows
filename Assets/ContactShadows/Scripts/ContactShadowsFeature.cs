@@ -14,10 +14,10 @@ public class ContactShadowsFeature : ScriptableRendererFeature
         [Range(4, 32)] public int _sampleCount = 16;
         [Range(0, 1)] public float _temporalFilter = 0.5f;
         public NoiseTextureSet _noiseTextures;
-        [HideInInspector] public Texture _DefaultTexture;
         public bool _downsample = false;
         public LayerMask _opaqueMask = ~0;
         public RenderPassEvent _insertPosition;
+        public Texture _DefaultTexture;
     }
 
     RenderTargetHandle m_DepthTextureTemp;
@@ -25,9 +25,9 @@ public class ContactShadowsFeature : ScriptableRendererFeature
 
     // MUST be named "settings" (lowercase) to be shown in the Render Features inspector
     public ContactShadowsFeatureSettings settings = new ContactShadowsFeatureSettings();
-    ContactShadowsRenderPass contactShadowRenderPass;
-    InsertContactShadowsRenderPass insertContactShadowRenderPass;
     DepthOnlyPass m_DepthPrepass;
+    ContactShadowsRenderPass contactShadowRenderPass;
+    InsertBlankShadowmapPass insertBlankShadowmapPass;
 
     public override void Create()
     {        
@@ -39,8 +39,8 @@ public class ContactShadowsFeature : ScriptableRendererFeature
           settings._noiseTextures
           );
 
-        insertContactShadowRenderPass = new InsertContactShadowsRenderPass(
-            RenderPassEvent.AfterRenderingPostProcessing
+        insertBlankShadowmapPass = new InsertBlankShadowmapPass(
+            RenderPassEvent.AfterRenderingOpaques
             );
 
         m_DepthTextureTemp.Init("_CameraDepthTextureTemp");
@@ -62,7 +62,7 @@ public class ContactShadowsFeature : ScriptableRendererFeature
         contactShadowRenderPass.Setup(settings, renderer.cameraColorTarget, m_DepthTextureTemp.Identifier());
         renderer.EnqueuePass(contactShadowRenderPass);
 
-        insertContactShadowRenderPass.Setup(contactShadowRenderPass.GetBlank());
-        renderer.EnqueuePass(insertContactShadowRenderPass);
+        insertBlankShadowmapPass.Setup(settings._DefaultTexture);
+        renderer.EnqueuePass(insertBlankShadowmapPass);
     }
 }

@@ -18,12 +18,12 @@ MonoBehaviour:
     _sampleCount: 8
     _temporalFilter: 0
     _noiseTextures: {fileID: 11400000, guid: 798030585d01fc549b6bcb2975851535, type: 2}
-    _DefaultTexture: {fileID: 2800000, guid: 549986e272c12334f8db9ec559ccecd6, type: 3}
     _downsample: 0
     _opaqueMask:
       serializedVersion: 2
       m_Bits: 4294967295
     _insertPosition: 0
+    _DefaultTexture: {fileID: 2800000, guid: 549986e272c12334f8db9ec559ccecd6, type: 3}
 --- !u!114 &-622375903098030714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -82,16 +82,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   settings:
-    _rejectionDepth: 3.99
-    _sampleCount: 16
-    _temporalFilter: 0
+    _rejectionDepth: 1.76
+    _sampleCount: 15
+    _temporalFilter: 1
     _noiseTextures: {fileID: 11400000, guid: 798030585d01fc549b6bcb2975851535, type: 2}
-    _DefaultTexture: {fileID: 0}
-    _downsample: 0
+    _downsample: 1
     _opaqueMask:
       serializedVersion: 2
       m_Bits: 4294967295
     _insertPosition: 250
+    _DefaultTexture: {fileID: 2800000, guid: 549986e272c12334f8db9ec559ccecd6, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0

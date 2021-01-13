@@ -30,7 +30,6 @@ namespace PostEffects
             public Matrix4x4 _previousVP = Matrix4x4.identity;
         }
 
-        //CommandBuffer _command;
         RenderTexture tempRTHalf, tempRTFull;
         RenderTexture unfilteredMask;
 
@@ -131,8 +130,6 @@ namespace PostEffects
             {
                 UpdateTempObjects();
                 BuildCommandBuffer(ref context);
-                //context.ExecuteCommandBuffer(_command);
-                //_command.Clear();
             }
         }
 
@@ -159,7 +156,6 @@ namespace PostEffects
         {
             var cam = _currentCamera;
             var div = 1;
-            //return new Vector2Int(cam.pixelWidth / div, cam.pixelHeight / div);
             return new Vector2Int(_currentTextureWidth/ div, _currentTextureHeight / div);
         }
 
@@ -181,16 +177,6 @@ namespace PostEffects
                 _material = new Material(_shader);
                 _material.hideFlags = HideFlags.DontSave;
             }
-
-            //if (_command == null)
-            //{
-            //    _command = new CommandBuffer();
-            //    _command.name = "Contact Shadow Ray Tracing";
-            //}
-            //else
-            //{
-            //    _command.Clear();
-            //}
 
             // Update the common shader parameters.
             _material.SetFloat("_RejectionDepth", _rejectionDepth);
@@ -237,8 +223,6 @@ namespace PostEffects
             else
             {
                 // Do raytracing and output to the unfiltered mask RT.
-                //var unfilteredMaskID = Shader.PropertyToID("");
-                //_command.GetTemporaryRT(unfilteredMaskID, maskSize.x, maskSize.y, 0, FilterMode.Point, maskFormat);
                 _command.SetRenderTarget(unfilteredMask);
                 _command.DrawProcedural(Matrix4x4.identity, _material, 0, MeshTopology.Triangles, 3);
                 _command.SetGlobalTexture(Shader.PropertyToID("_UnfilteredMask"), unfilteredMask);
@@ -252,18 +236,15 @@ namespace PostEffects
             if (_downsample)
             {
                 // Downsample enabled: Use upsampler for the composition.
-                // TODO why??
-                _command.Blit(_DefaultTexture, tempRTFull);
                 _command.SetRenderTarget(tempRTFull);
                 _command.SetGlobalTexture(Shader.PropertyToID("_TempMask"), tempRTHalf);
-                _command.DrawProcedural(Matrix4x4.identity, _material, 3, MeshTopology.Triangles, 3);
+                _command.Blit(tempRTHalf, tempRTFull, _material, 3);
             }
             else
             {
                 // No downsample: Use simple blit.
                 _command.Blit(tempRTHalf, tempRTFull);
             }
-            //_command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), _DefaultTexture);
             _command.SetGlobalTexture(Shader.PropertyToID("_ContactShadowsMask"), tempRTFull);
             _command.SetRenderTarget(cameraColorTargetIdent, cameraDepthTargetIdent);
 
@@ -272,6 +253,7 @@ namespace PostEffects
             CameraDictionary[_currentCamera]._prevMaskRT1 = tempRTFull;
 
             context.ExecuteCommandBuffer(_command);
+            _command.Clear();
             CommandBufferPool.Release(_command);
         }
         #endregion

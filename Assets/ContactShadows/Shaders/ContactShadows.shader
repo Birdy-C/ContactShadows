@@ -44,7 +44,6 @@ Shader "Hidden/PostEffects/ContactShadows"
         // #3 - Composite with the shadow buffer
         Pass
         {
-            Blend Zero SrcAlpha
             CGPROGRAM
             #pragma vertex Vertex
             #pragma fragment FragmentComposite
@@ -95,7 +94,6 @@ Shader "Hidden/PostEffects/ContactShadows"
         // #3 - Composite with the shadow buffer
         Pass
         {
-            Blend Zero SrcAlpha
             CGPROGRAM
             #pragma vertex Vertex
             #pragma fragment FragmentComposite
